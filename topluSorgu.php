@@ -1,8 +1,8 @@
 <?php
-// topluSorgu.php
+require 'vendor/autoload.php';
 
-require 'vendor/autoload.php'; // PhpSpreadsheet (composer ile kurulmuş olmalı)
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Shared\Date;  // Tarihle ilgili sınıf
 
 echo "<!DOCTYPE html>
 <html lang='tr'>
@@ -44,13 +44,13 @@ echo "<!DOCTYPE html>
       color: #fff;
     }
     tr.success-row {
-      background-color: #d4edda; /* açık yeşil */
+      background-color: #d4edda;
     }
     tr.fail-row {
-      background-color: #f8d7da; /* açık kırmızı */
+      background-color: #f8d7da;
     }
     tr.warn-row {
-      background-color: #fff3cd; /* açık turuncu */
+      background-color: #fff3cd;
     }
   </style>
 </head>
@@ -83,24 +83,37 @@ echo "<table class='result-table'>
 
 // Satır satır oku (2. satırdan itibaren, 1. satır başlık)
 for ($row = 2; $row <= $highestRow; $row++) {
-    // Yeni isimlendirme: A=tcNo, B=ad, C=soyad, D=dogumTarihi
     $tcNo         = trim($worksheet->getCell("A{$row}")->getValue());
     $ad           = trim($worksheet->getCell("B{$row}")->getValue());
     $soyad        = trim($worksheet->getCell("C{$row}")->getValue());
-    $dogumTarihi  = trim($worksheet->getCell("D{$row}")->getValue());
 
-    // dogumTarihi içinden 4 basamaklı yılı çıkaracağız:
+    // D sütunu = dogumTarihi
+    $cellD = $worksheet->getCell("D{$row}");
+    $dogumTarihi = "";
+
+    // 1) Hücre tarih mi?
+    if (Date::isDateTime($cellD)) {
+        // Excel tarihini PHP DateTime objesine çevir
+        $phpDateObj = Date::excelToDateTimeObject($cellD->getValue());
+        // d.m.Y formatında string'e dönüştürelim (veya istediğiniz format)
+        $dogumTarihi = $phpDateObj->format('d.m.Y');
+    } else {
+        // Metin formatındaysa direkt al
+        $dogumTarihi = trim($cellD->getValue());
+    }
+
+    // dogumTarihi içinden 4 basamaklı yılı ayıklayalım
     $dogumYili = null;
     if (preg_match('/(\d{4})/', $dogumTarihi, $m)) {
-        $dogumYili = $m[1];  // 1994, vs.
+        $dogumYili = $m[1];  // 1994 vb.
     }
 
     // SOAP sorgusu
     $sonuc = tcKimlikSorgula($tcNo, $ad, $soyad, $dogumYili);
 
+    // Tablo satır rengi
     $rowClass = "";
     $durumYazisi = "";
-
     if ($sonuc === "true") {
         $rowClass = "success-row";
         $durumYazisi = "Doğrulandı";
@@ -125,11 +138,10 @@ echo "</tbody></table>";
 echo "</div></body></html>";
 
 
-// SOAP fonksiyonu
+// -------------- SOAP fonksiyonu --------------
 function tcKimlikSorgula($tcNo, $ad, $soyad, $dogumYili) {
     if (!$dogumYili) {
-        // Yıl yoksa hata
-        return null;
+        return null; // Yıl bulunamadıysa hata
     }
 
     $soapRequest = <<<XML
