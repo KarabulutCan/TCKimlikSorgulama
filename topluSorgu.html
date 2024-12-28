@@ -4,28 +4,70 @@
   <meta charset="UTF-8">
   <title>Toplu T.C. Kimlik Doğrulama</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 2rem; }
-    .result-table { margin-top: 1rem; border-collapse: collapse; width: 100%; }
-    .result-table th, .result-table td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
     }
-    .success { color: green; }
-    .fail { color: red; }
+    .container {
+      max-width: 500px;
+      margin: 5rem auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #333;
+    }
+    label {
+      font-weight: bold;
+      color: #555;
+    }
+    input[type="file"] {
+      display: block;
+      margin: 1rem 0;
+    }
+    button {
+      padding: 0.8rem 1.5rem;
+      background: #008CBA;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 1rem;
+    }
+    button:hover {
+      background: #006f8b;
+    }
+    p.note {
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 0.5rem;
+    }
   </style>
 </head>
 <body>
 
-<h1>Toplu T.C. Kimlik Doğrulama</h1>
+<div class="container">
+  <h1>Toplu T.C. Kimlik Doğrulama</h1>
+  
+  <form action="topluSorgu.php" method="POST" enctype="multipart/form-data">
+    <label for="excelFile">Excel Dosyası (xlsx, xls veya csv):</label>
+    <input type="file" name="excelFile" id="excelFile" accept=".xlsx, .xls, .csv" required />
+    
+    <!-- Not cümlesini basitleştirdik: -->
+    <p class="note">
+      Not: <strong>A=tcNo</strong>, B=ad, C=soyad, D=dogumTarihi
+    </p>
 
-<!-- Burada Excel dosyasını seçtiriyoruz -->
-<form action="topluSorgu.php" method="POST" enctype="multipart/form-data">
-  <label for="excelFile">Excel Dosyası Yükleyin (xlsx, xls veya csv):</label><br><br>
-  <input type="file" name="excelFile" id="excelFile" accept=".xlsx, .xls, .csv" required />
-  <br><br>
-  <button type="submit">Toplu Sorgu Başlat</button>
-</form>
+    <button type="submit">Toplu Sorgu Başlat</button>
+  </form>
+</div>
 
 </body>
 </html>
