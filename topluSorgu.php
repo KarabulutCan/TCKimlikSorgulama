@@ -44,13 +44,13 @@ echo "<!DOCTYPE html>
       color: #fff;
     }
     tr.success-row {
-      background-color: #d4edda;
+      background-color: #d4edda; /* Açık yeşil */
     }
     tr.fail-row {
-      background-color: #f8d7da;
+      background-color: #f8d7da; /* Açık kırmızı */
     }
     tr.warn-row {
-      background-color: #fff3cd;
+      background-color: #fff3cd; /* Açık turuncu */
     }
   </style>
 </head>
@@ -81,17 +81,17 @@ echo "<table class='result-table'>
       </thead>
       <tbody>";
 
-// Satır satır oku (2. satırdan itibaren, 1. satır başlık)
-for ($row = 2; $row <= $highestRow; $row++) {
-    $tcNo         = trim($worksheet->getCell("A{$row}")->getValue());
-    $ad           = trim($worksheet->getCell("B{$row}")->getValue());
-    $soyad        = trim($worksheet->getCell("C{$row}")->getValue());
+// Güncellendi: 1. satırdan itibaren okuyalım
+for ($row = 1; $row <= $highestRow; $row++) {
+    $tcNo  = trim($worksheet->getCell("A{$row}")->getValue());
+    $ad    = trim($worksheet->getCell("B{$row}")->getValue());
+    $soyad = trim($worksheet->getCell("C{$row}")->getValue());
 
     // D sütunu = dogumTarihi
-    $cellD = $worksheet->getCell("D{$row}");
-    $dogumTarihi = "";
+    $cellD        = $worksheet->getCell("D{$row}");
+    $dogumTarihi  = "";
 
-    // 1) Hücre tarih mi?
+    // Hücre tarih mi?
     if (Date::isDateTime($cellD)) {
         // Excel tarihini PHP DateTime objesine çevir
         $phpDateObj = Date::excelToDateTimeObject($cellD->getValue());
@@ -112,7 +112,7 @@ for ($row = 2; $row <= $highestRow; $row++) {
     $sonuc = tcKimlikSorgula($tcNo, $ad, $soyad, $dogumYili);
 
     // Tablo satır rengi
-    $rowClass = "";
+    $rowClass    = "";
     $durumYazisi = "";
     if ($sonuc === "true") {
         $rowClass = "success-row";
