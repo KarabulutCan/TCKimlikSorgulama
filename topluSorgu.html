@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Toplu T.C. Kimlik Doğrulama</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    .result-table { margin-top: 1rem; border-collapse: collapse; width: 100%; }
+    .result-table th, .result-table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    .success { color: green; }
+    .fail { color: red; }
+  </style>
+</head>
+<body>
+
+<h1>Toplu T.C. Kimlik Doğrulama</h1>
+
+<!-- Burada Excel dosyasını seçtiriyoruz -->
+<form action="topluSorgu.php" method="POST" enctype="multipart/form-data">
+  <label for="excelFile">Excel Dosyası Yükleyin (xlsx, xls veya csv):</label><br><br>
+  <input type="file" name="excelFile" id="excelFile" accept=".xlsx, .xls, .csv" required />
+  <br><br>
+  <button type="submit">Toplu Sorgu Başlat</button>
+</form>
+
+</body>
+</html>

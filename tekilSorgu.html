@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>T.C. Kimlik Doğrulama (Kesin Karakter Engeli)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f1f1;
+      margin: 0; padding: 0;
+    }
+    .container {
+      max-width: 400px;
+      margin: 5rem auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+    }
+    h1 { text-align: center; margin-bottom: 1.5rem; }
+    label { font-weight: bold; }
+    input {
+      width: 100%; margin-bottom: 1rem;
+      padding: 0.5rem; border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      padding: 0.6rem 1rem; background: #008CBA;
+      color: #fff; border: none; cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover {
+      background: #006f8b;
+    }
+    #result {
+      margin-top: 1rem; font-weight: bold; text-align: center;
+    }
+  </style>
+
+  <!-- SweetAlert2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+<div class="container">
+  <h1>T.C. Kimlik Doğrulama</h1>
+  
+  <!-- TÜMÜNE type="text" VERİP, AŞAĞIDA JS KONTROLÜ UYGULAYACAĞIZ -->
+  <label for="tcNo">T.C. Kimlik Numarası (11 rakam):</label>
+  <input type="text" id="tcNo" placeholder="12345678901" required>
+
+  <label for="ad">Ad (Sadece harf/boşluk):</label>
+  <input type="text" id="ad" placeholder="Örnek" required>
+
+  <label for="soyad">Soyad (Sadece harf/boşluk):</label>
+  <input type="text" id="soyad" placeholder="Kullanıcı" required>
+
+  <label for="dogumYili">Doğum Yılı (en fazla 4 rakam):</label>
+  <input type="text" id="dogumYili" placeholder="1990" required>
+
+  <button type="button" onclick="dogrula()">Doğrula</button>
+  
+  <div id="result"></div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // Elemanları alalım
+  const tcNoInput = document.getElementById("tcNo");
+  const adInput = document.getElementById("ad");
+  const soyadInput = document.getElementById("soyad");
+  const dogumYiliInput = document.getElementById("dogumYili");
+
+  // T.C. Kimlik: sadece rakam, max 11
+  tcNoInput.addEventListener("input", (e) => {
+    let val = e.target.value;
+    // Harf vs. girildiyse anında temizle
+    val = val.replace(/[^0-9]/g, "");
+    // 11 karakterden fazlasını kes
+    if (val.length > 11) {
+      val = val.slice(0, 11);
+    }
+    e.target.value = val;
+  });
+
+  // Ad: sadece harf (Türkçe dahil) ve boşluk
+  adInput.addEventListener("input", (e) => {
+    let val = e.target.value;
+    val = val.replace(/[^a-zA-ZÇĞİÖŞÜçğıöşü\s]/g, "");
+    e.target.value = val;
+  });
+
+  // Soyad: sadece harf (Türkçe dahil) ve boşluk
+  soyadInput.addEventListener("input", (e) => {
+    let val = e.target.value;
+    val = val.replace(/[^a-zA-ZÇĞİÖŞÜçğıöşü\s]/g, "");
+    e.target.value = val;
+  });
+
+  // Doğum Yılı: sadece rakam, max 4
+  dogumYiliInput.addEventListener("input", (e) => {
+    let val = e.target.value;
+    val = val.replace(/[^0-9]/g, "");
+    if (val.length > 4) {
+      val = val.slice(0, 4);
+    }
+    e.target.value = val;
+  });
+});
+
+// Artık istenmeyen karakter girse bile anında silinir.
+// ---------------------------------------------------
+// DOĞRULA BUTONUNA BASILDIĞINDA EK KONTROLLER + AJAX:
+function dogrula() {
+  const tcNo = document.getElementById('tcNo').value.trim();
+  const ad = document.getElementById('ad').value.trim();
+  const soyad = document.getElementById('soyad').value.trim();
+  const dogumYili = document.getElementById('dogumYili').value.trim();
+
+  // Boş alan kontrolü
+  if (!tcNo || !ad || !soyad || !dogumYili) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Uyarı',
+      text: 'Lütfen tüm alanları doldurunuz!',
+      confirmButtonText: 'Tamam'
+    });
+    return;
+  }
+
+  // TCKN tam 11 hane mi?
+  if (tcNo.length !== 11) {
+    Swal.fire({
+      icon: 'error',
+      title: 'T.C. Kimlik Hatası',
+      text: 'T.C. Kimlik 11 hane olmalı!',
+      confirmButtonText: 'Tamam'
+    });
+    return;
+  }
+
+  // Doğum yılı 4 hane mi?
+  if (dogumYili.length !== 4) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Doğum Yılı Hatası',
+      text: 'Doğum yılı 4 hane olmalı!',
+      confirmButtonText: 'Tamam'
+    });
+    return;
+  }
+
+  // Yükleniyor (loading) popup
+  Swal.fire({
+    title: 'Lütfen bekleyin',
+    text: 'Doğrulama işlemi yapılıyor...',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  // Post verisi
+  const postData = { tcNo, ad, soyad, dogumYili };
+
+  fetch("dogrula.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(postData)
+  })
+  .then(res => {
+    if (!res.ok) {
+      throw new Error("Sunucu hatası: " + res.status);
+    }
+    return res.json();
+  })
+  .then(data => {
+    Swal.close();
+
+    if (data.error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Hata',
+        text: data.error,
+        confirmButtonText: 'Tamam'
+      });
+      document.getElementById("result").textContent = "";
+      return;
+    }
+
+    if (data.sonuc === "true") {
+      // Başarılı
+      Swal.fire({
+        icon: 'success',
+        title: 'Doğrulama Başarılı!',
+        html: `
+          <table style="margin:0 auto;">
+            <tr><td><strong>T.C. Kimlik:</strong></td><td>${tcNo}</td></tr>
+            <tr><td><strong>Ad:</strong></td><td>${ad}</td></tr>
+            <tr><td><strong>Soyad:</strong></td><td>${soyad}</td></tr>
+            <tr><td><strong>Doğum Yılı:</strong></td><td>${dogumYili}</td></tr>
+          </table>
+        `,
+        confirmButtonText: 'Tamam'
+      });
+      document.getElementById("result").textContent = "T.C. Kimlik bilgisi DOĞRULANDI.";
+      document.getElementById("result").style.color = "green";
+    }
+    else if (data.sonuc === "false") {
+      // Kimlik geçersiz
+      Swal.fire({
+        icon: 'warning',
+        title: 'Kimlik bilgisi doğrulanamadı',
+        confirmButtonText: 'Tamam'
+      });
+      document.getElementById("result").textContent = "Kimlik bilgisi doğrulanamadı.";
+      document.getElementById("result").style.color = "red";
+    }
+    else {
+      // Beklenmeyen
+      Swal.fire({
+        icon: 'info',
+        title: 'Bilinmeyen Durum',
+        text: 'Yanıt anlaşılamadı veya hata oluştu.',
+        confirmButtonText: 'Tamam'
+      });
+      document.getElementById("result").textContent = "Yanıt anlaşılamadı veya hata.";
+      document.getElementById("result").style.color = "orange";
+    }
+  })
+  .catch(err => {
+    Swal.close();
+    Swal.fire({
+      icon: 'error',
+      title: 'İstek Hatası',
+      text: err.message,
+      confirmButtonText: 'Tamam'
+    });
+  });
+}
+</script>
+</body>
+</html>
